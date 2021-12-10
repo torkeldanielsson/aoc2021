@@ -1,4 +1,11 @@
-use std::{ascii::AsciiExt, error::Error, fs};
+use std::{error::Error, fs};
+
+fn sort_chars(s: &str) -> String {
+    let mut chars: Vec<char> = s.chars().collect();
+    chars.sort_by(|a, b| b.cmp(a));
+    let s: String = chars.iter().collect();
+    s
+}
 
 fn solve(line: &str) -> i32 {
     let mut parts = line.splitn(2, '|');
@@ -102,57 +109,63 @@ fn solve(line: &str) -> i32 {
         d_0
     };
 
-    println!(
-        "{:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?}",
-        d_0, d_1, d_2, d_3, d_4, d_5, d_6, d_7, d_8, d_9
-    );
-
-    println!("{:?}", numbers);
+    /*
+        println!(
+            "{:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?}",
+            d_0, d_1, d_2, d_3, d_4, d_5, d_6, d_7, d_8, d_9
+        );
+    */
 
     let numbers: Vec<i32> = numbers
         .iter()
+        .map(|s| sort_chars(s))
         .map(|s| {
-            if s == &d_0 {
+            if &s == &sort_chars(&d_0) {
                 0
-            } else if s == &d_1 {
+            } else if &s == &sort_chars(&d_1) {
                 1
-            } else if s == &d_2 {
+            } else if &s == &sort_chars(&d_2) {
                 2
-            } else if s == &d_3 {
+            } else if &s == &sort_chars(&d_3) {
                 3
-            } else if s == &d_4 {
+            } else if &s == &sort_chars(&d_4) {
                 4
-            } else if s == &d_5 {
+            } else if &s == &sort_chars(&d_5) {
                 5
-            } else if s == &d_6 {
+            } else if &s == &sort_chars(&d_6) {
                 6
-            } else if s == &d_7 {
+            } else if &s == &sort_chars(&d_7) {
                 7
-            } else if s == &d_8 {
+            } else if &s == &sort_chars(&d_8) {
                 8
-            } else {
-                println!("{:?}", s);
+            } else if &s == &sort_chars(&d_9) {
                 9
+            } else {
+                println!(
+                    "{:?} IS NONE!! {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?} {:?}",
+                    s, d_0, d_1, d_2, d_3, d_4, d_5, d_6, d_7, d_8, d_9
+                );
+
+                panic!("!");
             }
         })
         .collect();
 
-    println!("{:?}", numbers);
-
-    0
+    numbers[0] * 1000 + numbers[1] * 100 + numbers[2] * 10 + numbers[3]
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    solve(
-        "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab |
-cdfeb fcadb cdfeb cdbaf",
-    );
+    let mut res = 0;
 
-    /*
-    for line in fs::read_to_string("input_test")?.lines() {
-        solve(line);
+    for line in fs::read_to_string("input")?.lines() {
+        println!("{} -> {}", line, solve(line));
+
+        res += solve(line);
     }
-    */
+
+    println!("{:?}", res);
+
+    // 1234049 is too high
 
     Ok(())
 }
