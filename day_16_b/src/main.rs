@@ -106,7 +106,7 @@ fn parse_message(
                         res_out.push(new_sub_val);
                     }
                     1 => {
-                        let mut new_sub_val = 0;
+                        let mut new_sub_val;
                         new_sub_val = sub_values[0];
                         for sub_val in &sub_values[1..] {
                             new_sub_val *= sub_val;
