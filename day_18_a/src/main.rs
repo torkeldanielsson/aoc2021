@@ -1,54 +1,116 @@
+use core::fmt;
 use std::{error::Error, fs};
 
-fn to_char_radix_20(val: u8) -> char {
-    match val {
-        1 => '1',
-        2 => '2',
-        3 => '3',
-        4 => '4',
-        5 => '5',
-        6 => '6',
-        7 => '7',
-        8 => '8',
-        9 => '9',
-        10 => 'A',
-        11 => 'B',
-        12 => 'C',
-        13 => 'D',
-        14 => 'E',
-        15 => 'F',
-        16 => 'G',
-        17 => 'H',
-        18 => 'I',
-        19 => 'J',
-        20 => 'K',
-        21 => 'L',
-        22 => 'M',
-        23 => 'N',
-        24 => 'O',
-        25 => 'P',
-        26 => 'Q',
-        27 => 'R',
-        28 => 'S',
-        29 => 'T',
-        _ => panic!("illegal number: {}", val),
+#[derive(Debug, Copy, Clone)]
+struct Val {
+    is_val: bool,
+    val: i32,
+    c: char,
+}
+
+impl fmt::Display for Val {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.is_val {
+            write!(f, "{}", self.val)
+        } else {
+            write!(f, "{}", self.c)
+        }
     }
 }
 
+fn print_val_arr(vals: &Vec<Val>) {
+    for v in vals {
+        print!("{}", v);
+    }
+    println!();
+}
+
+#[derive(Debug)]
+struct Sn {
+    number: Option<i32>,
+    sub_nodes: Option<Box<(Sn, Sn)>>,
+}
+
+fn magnitude(sn: &Sn) -> i64 {
+    if let Some(number) = sn.number {
+        return number as i64;
+    }
+    return 3 * magnitude(&sn.sub_nodes.as_ref().unwrap().0)
+        + 2 * magnitude(&sn.sub_nodes.as_ref().unwrap().1);
+}
+
+fn parse_sn(line: &[Val]) -> (Sn, usize) {
+    if line[0].c != '[' {
+        return (
+            Sn {
+                number: Some(line[0].to_string().parse::<i32>().unwrap()),
+                sub_nodes: None,
+            },
+            1,
+        );
+    }
+
+    let sn_1 = parse_sn(&line[1..]);
+
+    assert!(line[1 + sn_1.1].c == ',');
+
+    let sn_2 = parse_sn(&line[(1 + sn_1.1 + 1)..]);
+
+    assert!(line[1 + sn_1.1 + 1 + sn_2.1].c == ']');
+
+    (
+        Sn {
+            number: None,
+            sub_nodes: Some(Box::new((sn_1.0, sn_2.0))),
+        },
+        1 + sn_1.1 + 1 + sn_2.1 + 1,
+    )
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut sn: Vec<Vec<char>> = fs::read_to_string("input_test")?
+    let mut sn: Vec<Vec<Val>> = fs::read_to_string("input")?
         .lines()
-        .map(|s| s.chars().collect())
+        .map(|s| {
+            s.chars()
+                .map(|c| match c {
+                    '[' | ',' | ']' => Val {
+                        is_val: false,
+                        val: 0,
+                        c: c,
+                    },
+                    _ => Val {
+                        is_val: true,
+                        val: c.to_string().parse::<u8>().unwrap() as i32,
+                        c: ' ',
+                    },
+                })
+                .collect()
+        })
         .collect();
 
-    let mut res = sn[0].to_owned();
+    let mut res: Vec<Val> = sn[0].clone();
     sn.remove(0);
 
     for sn in &mut sn {
-        res.insert(0, '[');
-        res.push(',');
+        res.insert(
+            0,
+            Val {
+                is_val: false,
+                val: 0,
+                c: '[',
+            },
+        );
+        res.push(Val {
+            is_val: false,
+            val: 0,
+            c: ',',
+        });
         res.append(sn);
-        res.push(']');
+        res.push(Val {
+            is_val: false,
+            val: 0,
+            c: ']',
+        });
 
         let mut something_happened = true;
         'main: while something_happened {
@@ -56,82 +118,122 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let mut depth = 0;
             for i in 0..res.len() - 3 {
-                if res[i] == '[' && res[i + 1] != '[' && res[i + 3] != '[' && depth >= 4 {
-                    res.insert(i, '_');
-                    println!(
-                        "explode before: {:?} ({})",
-                        String::from_iter(res.iter()),
-                        i
-                    );
-                    res.remove(i);
-                    let left_value =
-                        u32::from_str_radix(&res[i + 1].to_string(), 30).unwrap() as u8;
-                    let right_value =
-                        u32::from_str_radix(&res[i + 3].to_string(), 30).unwrap() as u8;
+                if res[i].c == '[' && res[i + 1].c != '[' && res[i + 3].c != '[' && depth >= 4 {
+                    print!("explode before: ");
+                    print_val_arr(&res);
+                    let left_value = res[i + 1].val;
+                    let right_value = res[i + 3].val;
                     println!("l: {}, r: {}", left_value, right_value);
                     let mut li = i;
                     while li != 0 {
                         li -= 1;
-                        if res[li] != '[' && res[li] != ',' && res[li] != ']' {
-                            let mut value = res[li].to_string().parse::<u8>().unwrap();
-                            value += left_value;
-                            res[li] = to_char_radix_20(value);
+                        if res[li].c != '[' && res[li].c != ',' && res[li].c != ']' {
+                            res[li].val += left_value;
                             break;
                         }
                     }
                     let mut ri = i + 4;
                     while ri != res.len() - 1 {
                         ri += 1;
-                        if res[ri] != '[' && res[ri] != ',' && res[ri] != ']' {
-                            let mut value =
-                                u32::from_str_radix(&res[ri].to_string(), 30).unwrap() as u8;
-                            value += right_value;
-                            res[ri] = to_char_radix_20(value);
+                        if res[ri].c != '[' && res[ri].c != ',' && res[ri].c != ']' {
+                            res[ri].val += right_value;
                             break;
                         }
                     }
-                    res[i] = '0';
+                    res[i] = Val {
+                        is_val: true,
+                        val: 0,
+                        c: ' ',
+                    };
                     res.remove(i + 1);
                     res.remove(i + 1);
                     res.remove(i + 1);
                     res.remove(i + 1);
-                    println!("explode after: {:?}", String::from_iter(res.iter()));
+                    print!("explode after: ");
+                    print_val_arr(&res);
+
                     something_happened = true;
                     continue 'main;
                 }
-                if res[i] == '[' {
+                if res[i].c == '[' {
                     depth += 1;
                 }
-                if res[i] == ']' {
+                if res[i].c == ']' {
                     depth -= 1;
                 }
             }
 
             for i in 0..res.len() {
-                if res[i] != '[' && res[i] != ',' && res[i] != ']' {
-                    let value = u32::from_str_radix(&res[i].to_string(), 30).unwrap();
+                if res[i].c != '[' && res[i].c != ',' && res[i].c != ']' {
+                    let value = res[i].val;
                     if value > 9 {
-                        println!("split before: {:?}", String::from_iter(res.iter()));
+                        print!("split before: ");
+                        print_val_arr(&res);
                         let values = if value % 2 == 0 {
                             (value / 2, value / 2)
                         } else {
                             (value / 2, value / 2 + 1)
                         };
                         res.remove(i);
-                        res.insert(i, ']');
-                        res.insert(i, to_char_radix_20(values.1 as u8));
-                        res.insert(i, ',');
-                        res.insert(i, to_char_radix_20(values.0 as u8));
-                        res.insert(i, '[');
-                        println!("split after: {:?}", String::from_iter(res.iter()));
+                        res.insert(
+                            i,
+                            Val {
+                                is_val: false,
+                                val: 0,
+                                c: ']',
+                            },
+                        );
+                        res.insert(
+                            i,
+                            Val {
+                                is_val: true,
+                                val: values.1,
+                                c: ' ',
+                            },
+                        );
+                        res.insert(
+                            i,
+                            Val {
+                                is_val: false,
+                                val: 0,
+                                c: ',',
+                            },
+                        );
+                        res.insert(
+                            i,
+                            Val {
+                                is_val: true,
+                                val: values.0,
+                                c: ' ',
+                            },
+                        );
+                        res.insert(
+                            i,
+                            Val {
+                                is_val: false,
+                                val: 0,
+                                c: '[',
+                            },
+                        );
+                        print!("split after: ");
+                        print_val_arr(&res);
                         something_happened = true;
                         continue 'main;
                     }
                 }
             }
         }
-        println!("final: {:?}", String::from_iter(res.iter()));
+        println!("after step: ");
+        print_val_arr(&res);
+        println!("");
     }
+
+    println!("finito: ");
+    print_val_arr(&res);
+
+    let sn = parse_sn(&res);
+
+    println!("magnitude: {}", magnitude(&sn.0));
 
     Ok(())
 }
