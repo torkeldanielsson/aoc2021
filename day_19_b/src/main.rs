@@ -38,6 +38,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut globbed = scanners[0].clone();
     scanners.remove(0);
 
+    let mut scanner_positions = Vec::new();
+    scanner_positions.push(ivec3(0, 0, 0));
+
     while scanners.len() != 0 {
         'main: for i2 in 0..scanners.len() {
             let scanner2 = &scanners[i2];
@@ -116,6 +119,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                                 globbed.1.push(distances);
                             }
                             scanners.remove(i2);
+                            scanner_positions.push(translation);
                             break 'main;
                         }
                     }
@@ -124,7 +128,19 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    println!("beacons: {}", globbed.0.len());
+    let mut largest_distance = 0;
+
+    for i1 in 0..scanner_positions.len() - 1 {
+        for i2 in i1 + 1..scanner_positions.len() {
+            let abs_diff = (scanner_positions[i1] - scanner_positions[i2]).abs();
+            let manhattan_dist = abs_diff.x + abs_diff.y + abs_diff.z;
+            if manhattan_dist > largest_distance {
+                largest_distance = manhattan_dist;
+            }
+        }
+    }
+
+    println!("largest_distance: {}", largest_distance);
 
     Ok(())
 }
