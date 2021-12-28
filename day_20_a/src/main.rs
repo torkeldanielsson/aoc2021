@@ -68,8 +68,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         let old_map = map.clone();
         map.clear();
 
-        for x in (range.0 .0 - 10)..=(range.0 .1 + 10) {
-            for y in (range.1 .0 - 10)..=(range.1 .1 + 10) {
+        for x in (range.0 .0 - 20)..=(range.0 .1 + 20) {
+            for y in (range.1 .0 - 20)..=(range.1 .1 + 20) {
                 let mut lookup: u32 = 0;
                 for y_mod in (y - 1)..=(y + 1) {
                     for x_mod in (x - 1)..=(x + 1) {
@@ -86,9 +86,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    let range = print_map(&map);
+
+    let old_map = map.clone();
+    map.clear();
+
+    for v in old_map {
+        if range.0 .0 + 25 < v.0
+            && range.0 .1 - 25 > v.0
+            && range.1 .0 + 25 < v.1
+            && range.1 .1 - 25 > v.1
+        {
+            map.insert(v);
+        }
+    }
     print_map(&map);
 
-    // 6276 is too high
     println!("res: {}", map.len());
 
     Ok(())
