@@ -196,7 +196,7 @@ fn join(
 fn main() -> Result<(), Box<dyn Error>> {
     let mut cubes: BTreeSet<((i64, i64), (i64, i64), (i64, i64))> = BTreeSet::new();
 
-    let input = fs::read_to_string("input_test")?;
+    let input = fs::read_to_string("input")?;
 
     let lines: Vec<&str> = input.lines().collect();
 
