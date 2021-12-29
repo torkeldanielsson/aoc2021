@@ -5,12 +5,6 @@ fn split(
     splits: (Vec<i64>, Vec<i64>, Vec<i64>),
 ) -> BTreeSet<((i64, i64), (i64, i64), (i64, i64))> {
     {
-        println!("split x {}", splits.0.len());
-
-        let mut iters = 0;
-        let mut adds = 0;
-        let mut removes = 0;
-
         let mut did_split = true;
         while did_split {
             did_split = false;
@@ -30,26 +24,14 @@ fn split(
                 }
             }
 
-            adds += to_add.len();
-            removes += to_remove.len();
-
             cubes.append(&mut to_add);
             for r in to_remove {
                 cubes.remove(&r);
             }
-
-            iters += 1;
         }
-        println!("iters {}, adds: {}, removes: {}", iters, adds, removes);
     }
 
     {
-        println!("split y {}", splits.1.len());
-
-        let mut iters = 0;
-        let mut adds = 0;
-        let mut removes = 0;
-
         let mut did_split = true;
         while did_split {
             did_split = false;
@@ -69,22 +51,14 @@ fn split(
                 }
             }
 
-            adds += to_add.len();
-            removes += to_remove.len();
-
             cubes.append(&mut to_add);
             for r in to_remove {
                 cubes.remove(&r);
             }
-
-            iters += 1;
         }
-        println!("iters {}, adds: {}, removes: {}", iters, adds, removes);
     }
 
     {
-        println!("split z {}", splits.2.len());
-
         let mut iters = 0;
         let mut adds = 0;
         let mut removes = 0;
@@ -118,81 +92,8 @@ fn split(
 
             iters += 1;
         }
-        println!("iters {}, adds: {}, removes: {}", iters, adds, removes);
+        println!("z: iters {}, adds: {}, removes: {}", iters, adds, removes);
     }
-
-    println!("split done, joining");
-
-    {
-        // Join
-
-        let mut did_join = true;
-
-        while did_join {
-            did_join = false;
-
-            let mut to_remove = BTreeSet::new();
-            let mut to_add = BTreeSet::new();
-
-            'outer: for c1 in &cubes {
-                for c2 in &cubes {
-                    if c1 != c2 {
-                        if c1.0 .1 + 1 == c2.0 .0 && c1.1 == c2.1 && c1.2 == c2.2 {
-                            to_remove.insert(*c1);
-                            to_remove.insert(*c2);
-                            to_add.insert(((c1.0 .0, c2.0 .1), c1.1, c1.2));
-                            did_join = true;
-                            break 'outer;
-                        }
-                        if c1.0 .0 + 1 == c2.0 .1 && c1.1 == c2.1 && c1.2 == c2.2 {
-                            to_remove.insert(*c1);
-                            to_remove.insert(*c2);
-                            to_add.insert(((c2.0 .0, c1.0 .1), c1.1, c1.2));
-                            did_join = true;
-                            break 'outer;
-                        }
-
-                        if c1.1 .1 + 1 == c2.1 .0 && c1.0 == c2.0 && c1.2 == c2.2 {
-                            to_remove.insert(*c1);
-                            to_remove.insert(*c2);
-                            to_add.insert((c1.0, (c1.1 .0, c2.1 .1), c1.2));
-                            did_join = true;
-                            break 'outer;
-                        }
-                        if c1.1 .0 + 1 == c2.1 .1 && c1.0 == c2.0 && c1.2 == c2.2 {
-                            to_remove.insert(*c1);
-                            to_remove.insert(*c2);
-                            to_add.insert((c1.0, (c2.1 .0, c1.1 .1), c1.2));
-                            did_join = true;
-                            break 'outer;
-                        }
-
-                        if c1.2 .1 + 1 == c2.2 .0 && c1.1 == c2.1 && c1.0 == c2.0 {
-                            to_remove.insert(*c1);
-                            to_remove.insert(*c2);
-                            to_add.insert((c1.0, c1.1, (c1.2 .0, c2.2 .1)));
-                            did_join = true;
-                            break 'outer;
-                        }
-                        if c1.2 .0 + 1 == c2.2 .1 && c1.1 == c2.1 && c1.0 == c2.0 {
-                            to_remove.insert(*c1);
-                            to_remove.insert(*c2);
-                            to_add.insert((c1.0, c1.1, (c2.2 .0, c1.2 .1)));
-                            did_join = true;
-                            break 'outer;
-                        }
-                    }
-                }
-            }
-
-            cubes.append(&mut to_add);
-            for r in to_remove {
-                cubes.remove(&r);
-            }
-        }
-    }
-
-    println!("join done");
 
     cubes
 }
@@ -216,13 +117,95 @@ fn split_points(
     (x, y, z)
 }
 
+fn join(
+    mut cubes: BTreeSet<((i64, i64), (i64, i64), (i64, i64))>,
+) -> BTreeSet<((i64, i64), (i64, i64), (i64, i64))> {
+    let mut did_join = true;
+
+    while did_join {
+        did_join = false;
+
+        let mut to_remove = BTreeSet::new();
+        let mut to_add = BTreeSet::new();
+
+        let cube_vec: Vec<((i64, i64), (i64, i64), (i64, i64))> =
+            cubes.clone().into_iter().collect();
+
+        if cube_vec.len() > 0 {
+            'outer: for i1 in 0..cube_vec.len() - 1 {
+                for i2 in i1 + 1..cube_vec.len() {
+                    let c1 = &cube_vec[i1];
+                    let c2 = &cube_vec[i2];
+                    if c1.0 .1 + 1 == c2.0 .0 && c1.1 == c2.1 && c1.2 == c2.2 {
+                        to_remove.insert(*c1);
+                        to_remove.insert(*c2);
+                        to_add.insert(((c1.0 .0, c2.0 .1), c1.1, c1.2));
+                        did_join = true;
+                        break 'outer;
+                    }
+                    if c1.0 .0 == c2.0 .1 + 1 && c1.1 == c2.1 && c1.2 == c2.2 {
+                        to_remove.insert(*c1);
+                        to_remove.insert(*c2);
+                        to_add.insert(((c2.0 .0, c1.0 .1), c1.1, c1.2));
+                        did_join = true;
+                        break 'outer;
+                    }
+
+                    if c1.1 .1 + 1 == c2.1 .0 && c1.0 == c2.0 && c1.2 == c2.2 {
+                        to_remove.insert(*c1);
+                        to_remove.insert(*c2);
+                        to_add.insert((c1.0, (c1.1 .0, c2.1 .1), c1.2));
+                        did_join = true;
+                        break 'outer;
+                    }
+                    if c1.1 .0 == c2.1 .1 + 1 && c1.0 == c2.0 && c1.2 == c2.2 {
+                        to_remove.insert(*c1);
+                        to_remove.insert(*c2);
+                        to_add.insert((c1.0, (c2.1 .0, c1.1 .1), c1.2));
+                        did_join = true;
+                        break 'outer;
+                    }
+
+                    if c1.2 .1 + 1 == c2.2 .0 && c1.1 == c2.1 && c1.0 == c2.0 {
+                        to_remove.insert(*c1);
+                        to_remove.insert(*c2);
+                        to_add.insert((c1.0, c1.1, (c1.2 .0, c2.2 .1)));
+                        did_join = true;
+                        break 'outer;
+                    }
+                    if c1.2 .0 == c2.2 .1 + 1 && c1.1 == c2.1 && c1.0 == c2.0 {
+                        to_remove.insert(*c1);
+                        to_remove.insert(*c2);
+                        to_add.insert((c1.0, c1.1, (c2.2 .0, c1.2 .1)));
+                        did_join = true;
+                        break 'outer;
+                    }
+                }
+            }
+        }
+
+        cubes.append(&mut to_add);
+        for r in to_remove {
+            cubes.remove(&r);
+        }
+    }
+
+    cubes
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut cubes: BTreeSet<((i64, i64), (i64, i64), (i64, i64))> = BTreeSet::new();
 
-    for line in fs::read_to_string("input_test")?.lines() {
-        println!("line: {}", line);
+    let input = fs::read_to_string("input_test")?;
 
-        let parts: Vec<&str> = line.split(" ").collect();
+    let lines: Vec<&str> = input.lines().collect();
+
+    let line_count = lines.len();
+
+    for line in lines.iter().enumerate() {
+        println!("line {}/{}: {}", line.0, line_count, line.1);
+
+        let parts: Vec<&str> = line.1.split(" ").collect();
 
         let raw_ranges: Vec<&str> = parts[1].split(",").collect();
         // [(x_min, x_max), (y_min, y_max), (z_min, z_max)], inclusive!
@@ -243,11 +226,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             (ranges[2].0, ranges[2].1),
         ));
 
-        println!("hmm 0 ?");
-
         cubes = split(cubes, split_points(fresh.clone()));
 
-        println!("hmm 0.5 ?");
+        fresh = split(fresh, split_points(cubes.clone()));
+
+        cubes = split(cubes, split_points(fresh.clone()));
 
         fresh = split(fresh, split_points(cubes.clone()));
 
@@ -260,7 +243,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
-        // println!("{:?}", cubes);
+        //  println!("cubes after: {:?}", cubes);
 
         let mut volume: i64 = 0;
 
@@ -268,7 +251,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             volume += (v.0 .1 - v.0 .0 + 1) * (v.1 .1 - v.1 .0 + 1) * (v.2 .1 - v.2 .0 + 1);
         }
 
-        println!("cube count: {}, volume: {:?}\n", cubes.len(), volume);
+        println!("cube count: {}, volume: {:?}", cubes.len(), volume);
+
+        cubes = join(cubes);
+
+        println!();
     }
 
     Ok(())
