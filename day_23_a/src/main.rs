@@ -8,7 +8,13 @@ fn score_val(c: char) -> i32 {
     }
 }
 
-fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, score: i32) {
+fn permutate(
+    rooms: Vec<Vec<char>>,
+    hallway: Vec<char>,
+    scores: &mut Vec<i32>,
+    score: i32,
+    min_score: &mut i32,
+) {
     if rooms[0][0] == 'A'
         && rooms[0][1] == 'A'
         && rooms[1][0] == 'B'
@@ -19,9 +25,15 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
         && rooms[3][1] == 'D'
     {
         scores.push(score);
+
+        if score < *min_score {
+            *min_score = score;
+            println!("{}", score);
+        }
         return;
     }
-    /*
+
+    
         println!("#############    score: {}", score);
         println!(
             "#{}{} {} {} {} {}{}#",
@@ -37,10 +49,11 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
         );
         println!("  ########");
         println!();
-    */
+    
+
     let home = vec!['A', 'B', 'C', 'D'];
 
-    for r in 0..=3 {
+    for r in 0..4 {
         for i in 0..=1 {
             let mut ok_to_move = false;
 
@@ -79,6 +92,7 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
                         hallway_clone,
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
+                        min_score,
                     );
                 }
                 if (r == 0 && hallway[1] == ' ')
@@ -100,6 +114,7 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
                         hallway_clone,
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
+                        min_score,
                     );
                 }
                 if ((r == 0 || r == 1) && hallway[2] == ' ')
@@ -116,6 +131,7 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
                         hallway_clone,
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
+                        min_score,
                     );
                 }
                 if (r == 0 && hallway[2] == ' ' && hallway[3] == ' ')
@@ -132,6 +148,7 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
                         hallway_clone,
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
+                        min_score,
                     );
                 }
                 if (r == 0 && hallway[2] == ' ' && hallway[3] == ' ' && hallway[4] == ' ')
@@ -148,6 +165,7 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
                         hallway_clone,
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
+                        min_score,
                     );
                 }
                 if (r == 0
@@ -169,6 +187,7 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
                         hallway_clone,
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
+                        min_score,
                     );
                 }
                 if (r == 0
@@ -195,9 +214,54 @@ fn permutate(rooms: Vec<Vec<char>>, hallway: Vec<char>, scores: &mut Vec<i32>, s
                         hallway_clone,
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
+                        min_score,
                     );
                 }
             }
+        }
+    }
+
+    'h_loop: for h in 0..7 {
+        if hallway[h] != ' ' {
+            let r = match hallway[h] {
+                'A' => 0,
+                'B' => 1,
+                'C' => 2,
+                'D' => 3,
+                _ => panic!(),
+            };
+
+            let i = if rooms[r][0] == ' ' && rooms[r][1] == ' ' {
+                0
+            } else {
+                1
+            };
+            if i == 1 && (rooms[r][1] != ' ' || rooms[r][0] != home[r]) {
+                continue 'h_loop;
+            }
+
+            let r_distance = match h {
+                0 => vec![4, 6, 8, 10],
+                1 => vec![3, 5, 7, 9],
+                2 => vec![3, 3, 5, 7],
+                3 => vec![5, 3, 3, 5],
+                4 => vec![7, 5, 3, 3],
+                5 => vec![9, 7, 5, 3],
+                6 => vec![10, 8, 6, 4],
+                _ => panic!(),
+            };
+
+            let mut rooms_clone = rooms.clone();
+            rooms_clone[r][i] = hallway[h];
+            let mut hallway_clone = hallway.clone();
+            hallway_clone[h] = ' ';
+            permutate(
+                rooms_clone,
+                hallway_clone,
+                scores,
+                score + score_val(hallway[h]) * (r_distance[r] - i as i32),
+                min_score,
+            );
         }
     }
 }
@@ -214,7 +278,9 @@ fn main() {
 
     let mut scores = Vec::new();
 
-    permutate(rooms, hallway, &mut scores, 0);
+    let mut min_score = i32::MAX;
+
+    permutate(rooms, hallway, &mut scores, 0, &mut min_score);
 
     println!("scores: {:?}", scores);
 }
