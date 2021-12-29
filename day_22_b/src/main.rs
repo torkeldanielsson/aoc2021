@@ -5,68 +5,108 @@ fn split(
     splits: (Vec<i64>, Vec<i64>, Vec<i64>),
 ) -> HashSet<((i64, i64), (i64, i64), (i64, i64))> {
     {
+        println!("split x {}", splits.0.len());
+
+        let mut iters = 0;
+
         let mut did_split = true;
         while did_split {
             did_split = false;
 
-            let old_cubes = cubes.clone();
-            cubes.clear();
+            let mut to_remove = HashSet::new();
+            let mut to_add = HashSet::new();
 
-            'cube_match_x: for cube in old_cubes {
+            'cube_match_x: for cube in &cubes {
                 for split in &splits.0 {
                     if cube.0 .0 < *split && cube.0 .1 >= *split {
-                        cubes.insert(((cube.0 .0, *split - 1), cube.1, cube.2));
-                        cubes.insert(((*split, cube.0 .1), cube.1, cube.2));
+                        to_add.insert(((cube.0 .0, *split - 1), cube.1, cube.2));
+                        to_add.insert(((*split, cube.0 .1), cube.1, cube.2));
+                        to_remove.insert(*cube);
                         did_split = true;
                         continue 'cube_match_x;
                     }
                 }
-                cubes.insert(cube);
             }
+
+            cubes.extend(to_add);
+            for r in to_remove {
+                cubes.remove(&r);
+            }
+
+            iters += 1;
         }
+        println!("iters {}", iters);
     }
 
     {
+        println!("split y {}", splits.1.len());
+
+        let mut iters = 0;
+
         let mut did_split = true;
         while did_split {
             did_split = false;
-            let old_cubes = cubes.clone();
-            cubes.clear();
 
-            'cube_match_y: for cube in old_cubes {
+            let mut to_remove = HashSet::new();
+            let mut to_add = HashSet::new();
+
+            'cube_match_y: for cube in &cubes {
                 for split in &splits.1 {
                     if cube.1 .0 < *split && cube.1 .1 >= *split {
-                        cubes.insert((cube.0, (cube.1 .0, *split - 1), cube.2));
-                        cubes.insert((cube.0, (*split, cube.1 .1), cube.2));
+                        to_add.insert((cube.0, (cube.1 .0, *split - 1), cube.2));
+                        to_add.insert((cube.0, (*split, cube.1 .1), cube.2));
+                        to_remove.insert(*cube);
                         did_split = true;
                         continue 'cube_match_y;
                     }
                 }
-                cubes.insert(cube);
             }
+
+            cubes.extend(to_add);
+            for r in to_remove {
+                cubes.remove(&r);
+            }
+
+            iters += 1;
         }
+        println!("iters {}", iters);
     }
 
     {
+        println!("split z {}", splits.2.len());
+
+        let mut iters = 0;
+
         let mut did_split = true;
         while did_split {
             did_split = false;
-            let old_cubes = cubes.clone();
-            cubes.clear();
 
-            'cube_match_z: for cube in old_cubes {
+            let mut to_remove = HashSet::new();
+            let mut to_add = HashSet::new();
+
+            'cube_match_z: for cube in &cubes {
                 for split in &splits.2 {
                     if cube.2 .0 < *split && cube.2 .1 >= *split {
-                        cubes.insert((cube.0, cube.1, (cube.2 .0, *split - 1)));
-                        cubes.insert((cube.0, cube.1, (*split, cube.2 .1)));
+                        to_add.insert((cube.0, cube.1, (cube.2 .0, *split - 1)));
+                        to_add.insert((cube.0, cube.1, (*split, cube.2 .1)));
+                        to_remove.insert(*cube);
                         did_split = true;
                         continue 'cube_match_z;
                     }
                 }
-                cubes.insert(cube);
             }
+
+            cubes.extend(to_add);
+            for r in to_remove {
+                cubes.remove(&r);
+            }
+
+            iters += 1;
         }
+        println!("iters {}", iters);
     }
+
+    println!("split done");
 
     cubes
 }
@@ -117,7 +157,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             (ranges[2].0, ranges[2].1),
         ));
 
+        println!("hmm 0 ?");
+
         cubes = split(cubes, split_points(fresh.clone()));
+
+        println!("hmm 0.5 ?");
+
         fresh = split(fresh, split_points(cubes.clone()));
 
         if parts[0] == "on" {
