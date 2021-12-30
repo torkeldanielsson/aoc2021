@@ -14,7 +14,10 @@ fn permutate(
     scores: &mut Vec<i32>,
     score: i32,
     min_score: &mut i32,
+    mut history: Vec<(Vec<Vec<char>>, Vec<char>)>,
 ) {
+    history.push((rooms.clone(), hallway.clone()));
+
     if rooms[0][0] == 'A'
         && rooms[0][1] == 'A'
         && rooms[1][0] == 'B'
@@ -28,28 +31,29 @@ fn permutate(
 
         if score < *min_score {
             *min_score = score;
+
+            for step in history {
+                println!("#############");
+                println!(
+                    "#{}{} {} {} {} {}{}#",
+                    step.1[0], step.1[1], step.1[2], step.1[3], step.1[4], step.1[5], step.1[6]
+                );
+                println!(
+                    "###{}#{}#{}#{}###",
+                    step.0[0][1], step.0[1][1], step.0[2][1], step.0[3][1]
+                );
+                println!(
+                    "  #{}#{}#{}#{}#",
+                    step.0[0][0], step.0[1][0], step.0[2][0], step.0[3][0]
+                );
+                println!("  ########");
+                println!();
+            }
+
             println!("{}", score);
         }
         return;
     }
-
-    
-        println!("#############    score: {}", score);
-        println!(
-            "#{}{} {} {} {} {}{}#",
-            hallway[0], hallway[1], hallway[2], hallway[3], hallway[4], hallway[5], hallway[6]
-        );
-        println!(
-            "###{}#{}#{}#{}###",
-            rooms[0][1], rooms[1][1], rooms[2][1], rooms[3][1]
-        );
-        println!(
-            "  #{}#{}#{}#{}#",
-            rooms[0][0], rooms[1][0], rooms[2][0], rooms[3][0]
-        );
-        println!("  ########");
-        println!();
-    
 
     let home = vec!['A', 'B', 'C', 'D'];
 
@@ -87,12 +91,14 @@ fn permutate(
                     let mut hallway_clone = hallway.clone();
                     hallway_clone[0] = rooms[r][i];
                     let distance = vec![4, 6, 8, 10];
+
                     permutate(
                         rooms_clone,
                         hallway_clone,
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        history.clone(),
                     );
                 }
                 if (r == 0 && hallway[1] == ' ')
@@ -115,6 +121,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        history.clone(),
                     );
                 }
                 if ((r == 0 || r == 1) && hallway[2] == ' ')
@@ -132,6 +139,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        history.clone(),
                     );
                 }
                 if (r == 0 && hallway[2] == ' ' && hallway[3] == ' ')
@@ -149,6 +157,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        history.clone(),
                     );
                 }
                 if (r == 0 && hallway[2] == ' ' && hallway[3] == ' ' && hallway[4] == ' ')
@@ -166,6 +175,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        history.clone(),
                     );
                 }
                 if (r == 0
@@ -188,6 +198,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        history.clone(),
                     );
                 }
                 if (r == 0
@@ -215,6 +226,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        history.clone(),
                     );
                 }
             }
@@ -251,6 +263,32 @@ fn permutate(
                 _ => panic!(),
             };
 
+            if h == 0 && hallway[1] != ' ' {
+                continue 'h_loop;
+            }
+            if h <= 1 && r >= 1 && hallway[2] != ' ' {
+                continue 'h_loop;
+            }
+            if h <= 2 && r >= 2 && hallway[3] != ' ' {
+                continue 'h_loop;
+            }
+            if h <= 3 && r >= 3 && hallway[4] != ' ' {
+                continue 'h_loop;
+            }
+
+            if h == 6 && hallway[5] != ' ' {
+                continue 'h_loop;
+            }
+            if h >= 5 && r <= 2 && hallway[4] != ' ' {
+                continue 'h_loop;
+            }
+            if h >= 4 && r <= 1 && hallway[3] != ' ' {
+                continue 'h_loop;
+            }
+            if h >= 3 && r <= 0 && hallway[2] != ' ' {
+                continue 'h_loop;
+            }
+
             let mut rooms_clone = rooms.clone();
             rooms_clone[r][i] = hallway[h];
             let mut hallway_clone = hallway.clone();
@@ -261,17 +299,26 @@ fn permutate(
                 scores,
                 score + score_val(hallway[h]) * (r_distance[r] - i as i32),
                 min_score,
+                history.clone(),
             );
         }
     }
 }
 
 fn main() {
+    /*
     let rooms = vec![
         vec!['A', 'B'],
         vec!['D', 'C'],
         vec!['C', 'B'],
         vec!['A', 'D'],
+    ];*/
+
+    let rooms = vec![
+        vec!['C', 'A'],
+        vec!['D', 'D'],
+        vec!['B', 'A'],
+        vec!['B', 'C'],
     ];
 
     let hallway = vec![' '; 7];
@@ -280,7 +327,5 @@ fn main() {
 
     let mut min_score = i32::MAX;
 
-    permutate(rooms, hallway, &mut scores, 0, &mut min_score);
-
-    println!("scores: {:?}", scores);
+    permutate(rooms, hallway, &mut scores, 0, &mut min_score, Vec::new());
 }
