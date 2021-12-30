@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 fn score_val(c: char) -> i32 {
     match c {
         'A' => 1,
@@ -14,9 +16,17 @@ fn permutate(
     scores: &mut Vec<i32>,
     score: i32,
     min_score: &mut i32,
-    mut history: Vec<(Vec<Vec<char>>, Vec<char>)>,
+    visited_states: &mut HashSet<(Vec<Vec<char>>, Vec<char>, i32)>,
+    mut history: Vec<(Vec<Vec<char>>, Vec<char>, i32)>,
 ) {
-    history.push((rooms.clone(), hallway.clone()));
+    let state = (rooms.clone(), hallway.clone(), score);
+
+    history.push(state.clone());
+
+    if visited_states.contains(&state) {
+        return;
+    }
+    visited_states.insert(state);
 
     if rooms[0][0] == 'A'
         && rooms[0][1] == 'A'
@@ -33,7 +43,7 @@ fn permutate(
             *min_score = score;
 
             for step in history {
-                println!("#############");
+                println!("#############  score: {}", step.2);
                 println!(
                     "#{}{} {} {} {} {}{}#",
                     step.1[0], step.1[1], step.1[2], step.1[3], step.1[4], step.1[5], step.1[6]
@@ -98,6 +108,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        visited_states,
                         history.clone(),
                     );
                 }
@@ -121,6 +132,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        visited_states,
                         history.clone(),
                     );
                 }
@@ -139,6 +151,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        visited_states,
                         history.clone(),
                     );
                 }
@@ -157,6 +170,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        visited_states,
                         history.clone(),
                     );
                 }
@@ -175,6 +189,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        visited_states,
                         history.clone(),
                     );
                 }
@@ -198,6 +213,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        visited_states,
                         history.clone(),
                     );
                 }
@@ -226,6 +242,7 @@ fn permutate(
                         scores,
                         score + score_val(rooms[r][i]) * (distance[r] - i as i32),
                         min_score,
+                        visited_states,
                         history.clone(),
                     );
                 }
@@ -299,6 +316,7 @@ fn permutate(
                 scores,
                 score + score_val(hallway[h]) * (r_distance[r] - i as i32),
                 min_score,
+                visited_states,
                 history.clone(),
             );
         }
@@ -327,5 +345,18 @@ fn main() {
 
     let mut min_score = i32::MAX;
 
-    permutate(rooms, hallway, &mut scores, 0, &mut min_score, Vec::new());
+    let mut visited_states = HashSet::new();
+
+    permutate(
+        rooms,
+        hallway,
+        &mut scores,
+        0,
+        &mut min_score,
+        &mut visited_states,
+        Vec::new(),
+    );
+
+    println!("lowest: {}", min_score);
+    println!("visited_states count:  {}", visited_states.len());
 }

@@ -53,6 +53,7 @@ fn split(
                         for splity in &splits.1 {
                             if cube.1 .0 < *splity && cube.1 .1 >= *splity {
                                 hit_y = true;
+                                break;
                             }
                         }
                         if (split_limits.1 .0 <= cube.1 .0 && split_limits.1 .1 >= cube.1 .0)
@@ -64,6 +65,7 @@ fn split(
                         for splitz in &splits.2 {
                             if cube.2 .0 < *splitz && cube.2 .1 >= *splitz {
                                 hit_z = true;
+                                break;
                             }
                         }
                         if (split_limits.2 .0 <= cube.2 .0 && split_limits.2 .1 >= cube.2 .0)
@@ -110,6 +112,7 @@ fn split(
                         for splitx in &splits.0 {
                             if cube.0 .0 < *splitx && cube.0 .1 >= *splitx {
                                 hit_x = true;
+                                break;
                             }
                         }
                         if (split_limits.0 .0 <= cube.0 .0 && split_limits.0 .1 >= cube.0 .0)
@@ -121,6 +124,7 @@ fn split(
                         for splitz in &splits.2 {
                             if cube.2 .0 < *splitz && cube.2 .1 >= *splitz {
                                 hit_z = true;
+                                break;
                             }
                         }
                         if (split_limits.2 .0 <= cube.2 .0 && split_limits.2 .1 >= cube.2 .0)
@@ -167,6 +171,7 @@ fn split(
                         for splitx in &splits.0 {
                             if cube.0 .0 < *splitx && cube.0 .1 >= *splitx {
                                 hit_x = true;
+                                break;
                             }
                         }
                         if (split_limits.0 .0 <= cube.0 .0 && split_limits.0 .1 >= cube.0 .0)
@@ -178,6 +183,7 @@ fn split(
                         for splity in &splits.1 {
                             if cube.1 .0 < *splity && cube.1 .1 >= *splity {
                                 hit_y = true;
+                                break;
                             }
                         }
                         if (split_limits.1 .0 <= cube.1 .0 && split_limits.1 .1 >= cube.1 .0)
