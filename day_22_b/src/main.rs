@@ -4,40 +4,6 @@ fn split(
     mut cubes: BTreeSet<((i64, i64), (i64, i64), (i64, i64))>,
     splits: (Vec<i64>, Vec<i64>, Vec<i64>),
 ) -> BTreeSet<((i64, i64), (i64, i64), (i64, i64))> {
-    let mut iters = 0;
-    let mut adds = 0;
-    let mut removes = 0;
-
-    let mut split_limits = (
-        (i64::MAX, i64::MIN),
-        (i64::MAX, i64::MIN),
-        (i64::MAX, i64::MIN),
-    );
-    for x_split in &splits.0 {
-        if split_limits.0 .0 > *x_split {
-            split_limits.0 .0 = *x_split;
-        }
-        if split_limits.0 .1 < *x_split {
-            split_limits.0 .1 = *x_split;
-        }
-    }
-    for y_split in &splits.1 {
-        if split_limits.1 .0 > *y_split {
-            split_limits.1 .0 = *y_split;
-        }
-        if split_limits.1 .1 < *y_split {
-            split_limits.1 .1 = *y_split;
-        }
-    }
-    for z_split in &splits.2 {
-        if split_limits.2 .0 > *z_split {
-            split_limits.2 .0 = *z_split;
-        }
-        if split_limits.2 .1 < *z_split {
-            split_limits.2 .1 = *z_split;
-        }
-    }
-
     {
         let mut did_split = true;
         while did_split {
@@ -49,51 +15,19 @@ fn split(
             'cube_match_x: for cube in &cubes {
                 for split in &splits.0 {
                     if cube.0 .0 < *split && cube.0 .1 >= *split {
-                        let mut hit_y = false;
-                        for splity in &splits.1 {
-                            if cube.1 .0 < *splity && cube.1 .1 >= *splity {
-                                hit_y = true;
-                                break;
-                            }
-                        }
-                        if (split_limits.1 .0 <= cube.1 .0 && split_limits.1 .1 >= cube.1 .0)
-                            || (split_limits.1 .0 <= cube.1 .1 && split_limits.1 .1 >= cube.1 .1)
-                        {
-                            hit_y = true;
-                        }
-                        let mut hit_z = false;
-                        for splitz in &splits.2 {
-                            if cube.2 .0 < *splitz && cube.2 .1 >= *splitz {
-                                hit_z = true;
-                                break;
-                            }
-                        }
-                        if (split_limits.2 .0 <= cube.2 .0 && split_limits.2 .1 >= cube.2 .0)
-                            || (split_limits.2 .0 <= cube.2 .1 && split_limits.2 .1 >= cube.2 .1)
-                        {
-                            hit_z = true;
-                        }
-
-                        if hit_y && hit_z {
-                            to_add.insert(((cube.0 .0, *split - 1), cube.1, cube.2));
-                            to_add.insert(((*split, cube.0 .1), cube.1, cube.2));
-                            to_remove.insert(*cube);
-                            did_split = true;
-                            continue 'cube_match_x;
-                        }
+                        to_add.insert(((cube.0 .0, *split - 1), cube.1, cube.2));
+                        to_add.insert(((*split, cube.0 .1), cube.1, cube.2));
+                        to_remove.insert(*cube);
+                        did_split = true;
+                        continue 'cube_match_x;
                     }
                 }
             }
-
-            adds += to_add.len();
-            removes += to_remove.len();
 
             cubes.append(&mut to_add);
             for r in to_remove {
                 cubes.remove(&r);
             }
-
-            iters += 1;
         }
     }
 
@@ -108,55 +42,27 @@ fn split(
             'cube_match_y: for cube in &cubes {
                 for split in &splits.1 {
                     if cube.1 .0 < *split && cube.1 .1 >= *split {
-                        let mut hit_x = false;
-                        for splitx in &splits.0 {
-                            if cube.0 .0 < *splitx && cube.0 .1 >= *splitx {
-                                hit_x = true;
-                                break;
-                            }
-                        }
-                        if (split_limits.0 .0 <= cube.0 .0 && split_limits.0 .1 >= cube.0 .0)
-                            || (split_limits.0 .0 <= cube.0 .1 && split_limits.0 .1 >= cube.0 .1)
-                        {
-                            hit_x = true;
-                        }
-                        let mut hit_z = false;
-                        for splitz in &splits.2 {
-                            if cube.2 .0 < *splitz && cube.2 .1 >= *splitz {
-                                hit_z = true;
-                                break;
-                            }
-                        }
-                        if (split_limits.2 .0 <= cube.2 .0 && split_limits.2 .1 >= cube.2 .0)
-                            || (split_limits.2 .0 <= cube.2 .1 && split_limits.2 .1 >= cube.2 .1)
-                        {
-                            hit_z = true;
-                        }
-
-                        if hit_x && hit_z {
-                            to_add.insert((cube.0, (cube.1 .0, *split - 1), cube.2));
-                            to_add.insert((cube.0, (*split, cube.1 .1), cube.2));
-                            to_remove.insert(*cube);
-                            did_split = true;
-                            continue 'cube_match_y;
-                        }
+                        to_add.insert((cube.0, (cube.1 .0, *split - 1), cube.2));
+                        to_add.insert((cube.0, (*split, cube.1 .1), cube.2));
+                        to_remove.insert(*cube);
+                        did_split = true;
+                        continue 'cube_match_y;
                     }
                 }
             }
-
-            adds += to_add.len();
-            removes += to_remove.len();
 
             cubes.append(&mut to_add);
             for r in to_remove {
                 cubes.remove(&r);
             }
-
-            iters += 1;
         }
     }
 
     {
+        let mut iters = 0;
+        let mut adds = 0;
+        let mut removes = 0;
+
         let mut did_split = true;
         while did_split {
             did_split = false;
@@ -167,37 +73,11 @@ fn split(
             'cube_match_z: for cube in &cubes {
                 for split in &splits.2 {
                     if cube.2 .0 < *split && cube.2 .1 >= *split {
-                        let mut hit_x = false;
-                        for splitx in &splits.0 {
-                            if cube.0 .0 < *splitx && cube.0 .1 >= *splitx {
-                                hit_x = true;
-                                break;
-                            }
-                        }
-                        if (split_limits.0 .0 <= cube.0 .0 && split_limits.0 .1 >= cube.0 .0)
-                            || (split_limits.0 .0 <= cube.0 .1 && split_limits.0 .1 >= cube.0 .1)
-                        {
-                            hit_x = true;
-                        }
-                        let mut hit_y = false;
-                        for splity in &splits.1 {
-                            if cube.1 .0 < *splity && cube.1 .1 >= *splity {
-                                hit_y = true;
-                                break;
-                            }
-                        }
-                        if (split_limits.1 .0 <= cube.1 .0 && split_limits.1 .1 >= cube.1 .0)
-                            || (split_limits.1 .0 <= cube.1 .1 && split_limits.1 .1 >= cube.1 .1)
-                        {
-                            hit_y = true;
-                        }
-                        if hit_x && hit_y {
-                            to_add.insert((cube.0, cube.1, (cube.2 .0, *split - 1)));
-                            to_add.insert((cube.0, cube.1, (*split, cube.2 .1)));
-                            to_remove.insert(*cube);
-                            did_split = true;
-                            continue 'cube_match_z;
-                        }
+                        to_add.insert((cube.0, cube.1, (cube.2 .0, *split - 1)));
+                        to_add.insert((cube.0, cube.1, (*split, cube.2 .1)));
+                        to_remove.insert(*cube);
+                        did_split = true;
+                        continue 'cube_match_z;
                     }
                 }
             }
@@ -212,13 +92,8 @@ fn split(
 
             iters += 1;
         }
+        println!("z: iters {}, adds: {}, removes: {}", iters, adds, removes);
     }
-
-    /*
-    println!(
-        "split: iters {}, adds: {}, removes: {}",
-        iters, adds, removes
-    );*/
 
     cubes
 }
@@ -328,7 +203,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let line_count = lines.len();
 
     for line in lines.iter().enumerate() {
-        println!("line {}/{}: {}", line.0 + 1, line_count, line.1);
+        println!("line {}/{}: {}", line.0, line_count, line.1);
 
         let parts: Vec<&str> = line.1.split(" ").collect();
 
@@ -359,6 +234,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         cubes = split(cubes, split_points(fresh.clone()));
 
+        fresh = split(fresh, split_points(cubes.clone()));
+
         if parts[0] == "on" {
             cubes.extend(fresh);
         } else {
@@ -368,19 +245,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
+        //  println!("cubes after: {:?}", cubes);
+
         let mut volume: i64 = 0;
 
         for v in &cubes {
             volume += (v.0 .1 - v.0 .0 + 1) * (v.1 .1 - v.1 .0 + 1) * (v.2 .1 - v.2 .0 + 1);
         }
 
-        //println!("cubes: {:?}", cubes);
-
         println!("cube count: {}, volume: {:?}", cubes.len(), volume);
 
         cubes = join(cubes);
-
-        //println!("cubes after: {:?}", cubes);
 
         println!();
     }
