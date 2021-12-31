@@ -100,56 +100,64 @@ fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
 
         let cube_vec: Vec<Cube> = cubes.clone().into_iter().collect();
 
+        let mut join_touched = HashSet::new();
+
         if cube_vec.len() > 0 {
-            'outer: for i1 in 0..cube_vec.len() - 1 {
+            for i1 in 0..cube_vec.len() - 1 {
                 for i2 in i1 + 1..cube_vec.len() {
                     let c1 = &cube_vec[i1];
                     let c2 = &cube_vec[i2];
 
-                    for i in 0..3 {
-                        {
-                            let mut can_extend = true;
-                            if c1.d[i].max != c2.d[i].min {
-                                can_extend = false;
-                            }
-                            for ii in 0..3 {
-                                if i != ii && c1.d[ii] != c2.d[ii] {
+                    if !join_touched.contains(c1) && !join_touched.contains(c2) {
+                        for i in 0..3 {
+                            {
+                                let mut can_extend = true;
+                                if c1.d[i].max != c2.d[i].min {
                                     can_extend = false;
                                 }
-                            }
-                            if can_extend {
-                                to_remove.insert(*c1);
-                                to_remove.insert(*c2);
+                                for ii in 0..3 {
+                                    if i != ii && c1.d[ii] != c2.d[ii] {
+                                        can_extend = false;
+                                    }
+                                }
+                                if can_extend {
+                                    to_remove.insert(*c1);
+                                    to_remove.insert(*c2);
 
-                                let mut new_cube = c1.clone();
-                                new_cube.d[i].max = c2.d[i].max;
+                                    join_touched.insert(c1.clone());
+                                    join_touched.insert(c2.clone());
 
-                                to_add.insert(new_cube);
-                                did_join = true;
-                                break 'outer;
-                            }
-                        }
+                                    let mut new_cube = c1.clone();
+                                    new_cube.d[i].max = c2.d[i].max;
 
-                        {
-                            let mut can_extend = true;
-                            if c2.d[i].max != c1.d[i].min {
-                                can_extend = false;
-                            }
-                            for ii in 0..3 {
-                                if i != ii && c1.d[ii] != c2.d[ii] {
-                                    can_extend = false;
+                                    to_add.insert(new_cube);
+                                    did_join = true;
                                 }
                             }
-                            if can_extend {
-                                to_remove.insert(*c1);
-                                to_remove.insert(*c2);
 
-                                let mut new_cube = c2.clone();
-                                new_cube.d[i].max = c1.d[i].max;
+                            {
+                                let mut can_extend = true;
+                                if c2.d[i].max != c1.d[i].min {
+                                    can_extend = false;
+                                }
+                                for ii in 0..3 {
+                                    if i != ii && c1.d[ii] != c2.d[ii] {
+                                        can_extend = false;
+                                    }
+                                }
+                                if can_extend {
+                                    to_remove.insert(*c1);
+                                    to_remove.insert(*c2);
 
-                                to_add.insert(new_cube);
-                                did_join = true;
-                                break 'outer;
+                                    join_touched.insert(c1.clone());
+                                    join_touched.insert(c2.clone());
+
+                                    let mut new_cube = c2.clone();
+                                    new_cube.d[i].max = c1.d[i].max;
+
+                                    to_add.insert(new_cube);
+                                    did_join = true;
+                                }
                             }
                         }
                     }
