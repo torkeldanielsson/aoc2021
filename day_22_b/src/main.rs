@@ -11,17 +11,30 @@ struct Cube {
     d: [Dim; 3],
 }
 
-fn overlaps(a: Cube, b: Cube) -> bool {
+fn overlaps(a: &Cube, b: &Cube) -> bool {
+    let mut overlap_count = 0;
     for d in 0..3 {
         if (a.d[d].max > b.d[d].min && a.d[d].max < b.d[d].max)
             || (a.d[d].min > b.d[d].min && a.d[d].min < b.d[d].max)
             || (b.d[d].max > a.d[d].min && b.d[d].max < a.d[d].max)
             || (b.d[d].min > a.d[d].min && b.d[d].min < a.d[d].max)
         {
-            return true;
+            overlap_count += 1;
         }
     }
-    false
+
+    overlap_count == 3
+}
+
+fn contains(a: &Cube, b: &Cube) -> bool {
+    let mut contain_count = 0;
+    for d in 0..3 {
+        if a.d[d].max >= b.d[d].max && a.d[d].min <= b.d[d].min {
+            contain_count += 1;
+        }
+    }
+
+    contain_count == 3
 }
 
 fn split(mut cubes: HashSet<Cube>, splits: [Vec<i32>; 3]) -> HashSet<Cube> {
@@ -76,7 +89,10 @@ fn split_points(cubes: HashSet<Cube>) -> [Vec<i32>; 3] {
 fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
     let mut did_join = true;
 
+    let mut iters = 0;
+
     while did_join {
+        iters += 1;
         did_join = false;
 
         let mut to_remove = HashSet::new();
@@ -147,6 +163,8 @@ fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
         }
     }
 
+    println!("join iters: {}", iters);
+
     cubes
 }
 
@@ -193,13 +211,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             ],
         };
 
+        cubes.retain(|c| !contains(&fresh_one, c));
+
         let mut fresh: HashSet<Cube> = HashSet::new();
         fresh.insert(fresh_one);
 
         let count_cubes1 = cubes.len();
 
         let mut affected = cubes.clone();
-        affected.retain(|v| overlaps(*v, fresh_one));
+        affected.retain(|v| overlaps(v, &fresh_one));
         for a in &affected {
             cubes.remove(a);
         }
