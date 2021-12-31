@@ -91,12 +91,12 @@ fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
 
     let mut iters = 0;
 
-    while did_join {
+    while did_join && iters < 3 {
         iters += 1;
         did_join = false;
 
-        let mut to_remove = HashSet::new();
-        let mut to_add = HashSet::new();
+        let mut to_remove = Vec::new();
+        let mut to_add = Vec::new();
 
         let cube_vec: Vec<Cube> = cubes.clone().into_iter().collect();
 
@@ -115,23 +115,26 @@ fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
                                 if c1.d[i].max != c2.d[i].min {
                                     can_extend = false;
                                 }
-                                for ii in 0..3 {
-                                    if i != ii && c1.d[ii] != c2.d[ii] {
-                                        can_extend = false;
-                                    }
-                                }
                                 if can_extend {
-                                    to_remove.insert(*c1);
-                                    to_remove.insert(*c2);
+                                    for ii in 0..3 {
+                                        if i != ii && c1.d[ii] != c2.d[ii] {
+                                            can_extend = false;
+                                            break;
+                                        }
+                                    }
+                                    if can_extend {
+                                        to_remove.push(*c1);
+                                        to_remove.push(*c2);
 
-                                    join_touched.insert(c1.clone());
-                                    join_touched.insert(c2.clone());
+                                        join_touched.insert(c1.clone());
+                                        join_touched.insert(c2.clone());
 
-                                    let mut new_cube = c1.clone();
-                                    new_cube.d[i].max = c2.d[i].max;
+                                        let mut new_cube = c1.clone();
+                                        new_cube.d[i].max = c2.d[i].max;
 
-                                    to_add.insert(new_cube);
-                                    did_join = true;
+                                        to_add.push(new_cube);
+                                        did_join = true;
+                                    }
                                 }
                             }
 
@@ -140,23 +143,26 @@ fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
                                 if c2.d[i].max != c1.d[i].min {
                                     can_extend = false;
                                 }
-                                for ii in 0..3 {
-                                    if i != ii && c1.d[ii] != c2.d[ii] {
-                                        can_extend = false;
-                                    }
-                                }
                                 if can_extend {
-                                    to_remove.insert(*c1);
-                                    to_remove.insert(*c2);
+                                    for ii in 0..3 {
+                                        if i != ii && c1.d[ii] != c2.d[ii] {
+                                            can_extend = false;
+                                            break;
+                                        }
+                                    }
+                                    if can_extend {
+                                        to_remove.push(*c1);
+                                        to_remove.push(*c2);
 
-                                    join_touched.insert(c1.clone());
-                                    join_touched.insert(c2.clone());
+                                        join_touched.insert(c1.clone());
+                                        join_touched.insert(c2.clone());
 
-                                    let mut new_cube = c2.clone();
-                                    new_cube.d[i].max = c1.d[i].max;
+                                        let mut new_cube = c2.clone();
+                                        new_cube.d[i].max = c1.d[i].max;
 
-                                    to_add.insert(new_cube);
-                                    did_join = true;
+                                        to_add.push(new_cube);
+                                        did_join = true;
+                                    }
                                 }
                             }
                         }
