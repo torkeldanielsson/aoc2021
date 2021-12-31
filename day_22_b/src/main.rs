@@ -1,12 +1,12 @@
-use std::{collections::HashSet, error::Error, fs};
+use std::{collections::BTreeSet, error::Error, fs};
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy)]
+#[derive(Hash, Eq, PartialEq, PartialOrd, Ord, Clone, Copy)]
 struct Dim {
     min: i32,
     max: i32,
 }
 
-#[derive(Hash, Eq, PartialEq, Clone, Copy)]
+#[derive(Hash, Eq, PartialEq, PartialOrd, Ord, Clone, Copy)]
 struct Cube {
     d: [Dim; 3],
 }
@@ -37,14 +37,14 @@ fn contains(a: &Cube, b: &Cube) -> bool {
     contain_count == 3
 }
 
-fn split(mut cubes: HashSet<Cube>, splits: [Vec<i32>; 3]) -> HashSet<Cube> {
+fn split(mut cubes: BTreeSet<Cube>, splits: [Vec<i32>; 3]) -> BTreeSet<Cube> {
     for i in 0..3 {
         let mut did_split = true;
         while did_split {
             did_split = false;
 
-            let mut to_remove = HashSet::new();
-            let mut to_add = HashSet::new();
+            let mut to_remove = BTreeSet::new();
+            let mut to_add = BTreeSet::new();
 
             'cube_match: for cube in &cubes {
                 for split in &splits[i] {
@@ -74,7 +74,7 @@ fn split(mut cubes: HashSet<Cube>, splits: [Vec<i32>; 3]) -> HashSet<Cube> {
     cubes
 }
 
-fn split_points(cubes: HashSet<Cube>) -> [Vec<i32>; 3] {
+fn split_points(cubes: BTreeSet<Cube>) -> [Vec<i32>; 3] {
     let mut res = [Vec::new(), Vec::new(), Vec::new()];
     for cube in cubes {
         for i in 0..3 {
@@ -86,7 +86,7 @@ fn split_points(cubes: HashSet<Cube>) -> [Vec<i32>; 3] {
     res
 }
 
-fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
+fn join(mut cubes: BTreeSet<Cube>) -> BTreeSet<Cube> {
     let mut did_join = true;
 
     let mut iters = 0;
@@ -100,7 +100,7 @@ fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
 
         let cube_vec: Vec<Cube> = cubes.clone().into_iter().collect();
 
-        let mut join_touched = HashSet::new();
+        let mut join_touched = BTreeSet::new();
 
         if cube_vec.len() > 0 {
             for i1 in 0..cube_vec.len() - 1 {
@@ -183,9 +183,9 @@ fn join(mut cubes: HashSet<Cube>) -> HashSet<Cube> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut cubes: HashSet<Cube> = HashSet::new();
+    let mut cubes: BTreeSet<Cube> = BTreeSet::new();
 
-    let input = fs::read_to_string("input_test")?;
+    let input = fs::read_to_string("input")?;
 
     let lines: Vec<&str> = input.lines().collect();
 
@@ -227,7 +227,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         cubes.retain(|c| !contains(&fresh_one, c));
 
-        let mut fresh: HashSet<Cube> = HashSet::new();
+        let mut fresh: BTreeSet<Cube> = BTreeSet::new();
         fresh.insert(fresh_one);
 
         let count_cubes1 = cubes.len();
