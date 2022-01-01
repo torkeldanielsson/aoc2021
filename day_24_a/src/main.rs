@@ -11,11 +11,11 @@ fn reg(s: &str) -> usize {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut registers = [0; 4];
+    let mut registers = [0 as i64; 4];
 
-    let mut input = vec![5, 4, 3, 2, 1];
+    let mut input = vec![1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 4, 1];
 
-    for line in fs::read_to_string("input_test")?.lines() {
+    for line in fs::read_to_string("input")?.lines() {
         let parts: Vec<&str> = line.split(" ").collect();
 
         match parts[0] {
@@ -25,32 +25,32 @@ fn main() -> Result<(), Box<dyn Error>> {
             "add" => {
                 registers[reg(parts[1])] += match parts[2] {
                     "w" | "x" | "y" | "z" => registers[reg(parts[2])],
-                    _ => parts[2].parse::<i32>().unwrap(),
+                    _ => parts[2].parse::<i64>().unwrap(),
                 };
             }
             "mul" => {
                 registers[reg(parts[1])] *= match parts[2] {
                     "w" | "x" | "y" | "z" => registers[reg(parts[2])],
-                    _ => parts[2].parse::<i32>().unwrap(),
+                    _ => parts[2].parse::<i64>().unwrap(),
                 };
             }
             "div" => {
                 registers[reg(parts[1])] /= match parts[2] {
                     "w" | "x" | "y" | "z" => registers[reg(parts[2])],
-                    _ => parts[2].parse::<i32>().unwrap(),
+                    _ => parts[2].parse::<i64>().unwrap(),
                 };
             }
             "mod" => {
                 registers[reg(parts[1])] %= match parts[2] {
                     "w" | "x" | "y" | "z" => registers[reg(parts[2])],
-                    _ => parts[2].parse::<i32>().unwrap(),
+                    _ => parts[2].parse::<i64>().unwrap(),
                 };
             }
             "eql" => {
                 let a = registers[reg(parts[1])];
                 let b = match parts[2] {
                     "w" | "x" | "y" | "z" => registers[reg(parts[2])],
-                    _ => parts[2].parse::<i32>().unwrap(),
+                    _ => parts[2].parse::<i64>().unwrap(),
                 };
                 if a == b {
                     registers[reg(parts[1])] = 1;
@@ -61,6 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             _ => panic!(),
         }
 
+        println!("{}", line);
         println!(
             "w: {}, x: {}, y: {}, z: {}",
             registers[0], registers[1], registers[2], registers[3]
