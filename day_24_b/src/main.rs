@@ -236,7 +236,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("ff len: {}", first_four.len());
 
-    //    let mut ok_numbers = Vec::new();
+    let mut ok_numbers = Vec::new();
 
     for ff in &first_four {
         for sf in &second_four {
@@ -298,6 +298,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                         if registers[3] == 0 {
                             println!("input: {:?} is ok!", input_copy);
+                            let mut num = 0;
+                            for n in input_copy {
+                                num *= 10;
+                                num += n;
+                            }
+                            ok_numbers.push(num);
                         }
                     }
                 }
@@ -306,6 +312,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         print!(".");
         io::stdout().flush().unwrap();
     }
+
+    ok_numbers.sort();
+
+    println!("smallest: {}", ok_numbers[0]);
+    println!("largest: {}", ok_numbers.last().unwrap());
 
     Ok(())
 }
