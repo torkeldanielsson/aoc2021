@@ -15,8 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     while !is_done {
         is_done = true;
 
-        let old_universes = universes.clone();
-        universes.clear();
+        let old_universes = std::mem::take(&mut universes);
 
         for uc in old_universes {
             let u = &uc.0;
